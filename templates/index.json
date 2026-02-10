@@ -857,36 +857,6 @@
     },
     "177074121034c4f03e": {
       "type": "_blocks",
-      "blocks": {
-        "ai_gen_block_624c94a_HCNkP7": {
-          "type": "ai_gen_block_624c94a",
-          "settings": {
-            "heading": "Recently viewed",
-            "heading_alignment": "left",
-            "empty_state_message": "No recently viewed products",
-            "max_products": 8,
-            "desktop_width_percent": 100,
-            "columns_desktop": 4,
-            "columns_tablet": 3,
-            "columns_mobile": "2",
-            "grid_gap": 20,
-            "heading_size": 32,
-            "heading_text_transform": "uppercase",
-            "heading_color": "#a42325",
-            "image_border_radius": 0,
-            "image_background_color": "#f5f5f5",
-            "product_title_size": 14,
-            "product_title_color": "#000000",
-            "product_price_size": 14,
-            "product_price_color": "#a42325",
-            "empty_state_color": "#999999"
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "ai_gen_block_624c94a_HCNkP7"
-      ],
       "settings": {
         "content_direction": "column",
         "vertical_on_mobile": true,
