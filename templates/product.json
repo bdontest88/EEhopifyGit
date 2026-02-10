@@ -363,7 +363,7 @@
             "heading": "Recently viewed",
             "empty_message": "You haven't viewed any products yet",
             "max_products": 8,
-            "hide_when_empty": false,
+            "hide_when_empty": true,
             "desktop_width_percent": 100,
             "section_padding": 20,
             "columns_desktop": 4,
@@ -387,6 +387,7 @@
         "custom_liquid_q97fAD": {
           "type": "custom-liquid",
           "name": "t:names.custom_liquid",
+          "disabled": true,
           "settings": {
             "custom_liquid": "<a href=\"#\" onclick=\"localStorage.removeItem('recently_viewed_products'); location.reload(); return false;\" style=\"color: inherit; text-decoration: underline; cursor: pointer; font-size: 0.875em; margin-left: 1rem;\">Clear View History</a>"
           },
