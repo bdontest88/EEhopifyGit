@@ -369,7 +369,7 @@
             "columns_desktop": 4,
             "columns_tablet": 3,
             "columns_mobile": "2",
-            "grid_gap": 10,
+            "grid_gap": 1,
             "heading_alignment": "left",
             "heading_size": 30,
             "heading_spacing": 20,
