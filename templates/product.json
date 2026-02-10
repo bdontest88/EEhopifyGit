@@ -733,7 +733,7 @@
       "block_order": [
         "ai_gen_block_b447702_K4iVKz"
       ],
-      "name": "t:names.custom_section",
+      "name": "Recently Viewed",
       "settings": {
         "content_direction": "column",
         "vertical_on_mobile": true,
