@@ -362,7 +362,7 @@
           "settings": {
             "heading": "Recently viewed",
             "empty_message": "You haven't viewed any products yet",
-            "max_products": 10,
+            "max_products": 8,
             "hide_when_empty": true,
             "desktop_width_percent": 100,
             "section_padding": 20,
