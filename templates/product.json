@@ -363,7 +363,7 @@
             "heading": "Recently viewed",
             "empty_message": "You haven't viewed any products yet",
             "max_products": 8,
-            "hide_when_empty": true,
+            "hide_when_empty": false,
             "desktop_width_percent": 100,
             "section_padding": 20,
             "columns_desktop": 4,
@@ -383,10 +383,19 @@
             "empty_text_color": "#727272"
           },
           "blocks": {}
+        },
+        "custom_liquid_q97fAD": {
+          "type": "custom-liquid",
+          "name": "t:names.custom_liquid",
+          "settings": {
+            "custom_liquid": "<a href=\"#\" onclick=\"localStorage.removeItem('recently_viewed_products'); location.reload(); return false;\" style=\"color: inherit; text-decoration: underline; cursor: pointer; font-size: 0.875em; margin-left: 1rem;\">Clear View History</a>"
+          },
+          "blocks": {}
         }
       },
       "block_order": [
-        "ai_gen_block_b447702_K4iVKz"
+        "ai_gen_block_b447702_K4iVKz",
+        "custom_liquid_q97fAD"
       ],
       "custom_css": [
         "h2 {padding: 0;}"
