@@ -722,9 +722,9 @@
             "image_border_radius": 0,
             "image_background": "#f5f5f5",
             "product_title_size": 14,
-            "product_title_color": "#000000",
+            "product_title_color": "#727272",
             "product_price_size": 14,
-            "product_price_color": "#000000",
+            "product_price_color": "#727272",
             "empty_text_color": "#727272"
           },
           "blocks": {}
