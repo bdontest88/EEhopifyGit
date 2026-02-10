@@ -1,0 +1,26 @@
+<style>
+
+  .random-quotes__content.fade-in {
+    opacity: 1;
+  }
+
+  .random-quotes__content :is(strong, b) {
+    font-weight: bold;
+  }
+
+  .random-quotes__content :is(em, i) {
+    font-style: italic;
+  }
+
+  .random-quotes__content a {
+    color: {{ section.settings.link_color }};
+    text-decoration: underline;
+  }
+
+  .placeholder {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 2rem 0;
+  }
+</style>

@@ -1,0 +1,28 @@
+{%- layout none -%}{{ '<?xml version="1.0" encoding="UTF-8"?>' }}
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+<channel>
+  <title>{{ shop.name | escape }} - {{ collection.title | escape }}</title>
+  <link>{{ shop.url }}{{ collection.url }}</link>
+  <description>Product feed for {{ collection.title | escape }}</description>
+
+  {% paginate collection.products by 50 %}
+    {% for product in collection.products %}
+      {% for variant in product.variants %}
+      <item>
+        <g:id>{{ variant.id }}</g:id>
+        <g:title><![CDATA[{{ product.title | strip_html }} - {{ variant.title | strip_html }}]]></g:title>
+        <g:description><![CDATA[{{ product.description | strip_html | strip_newlines | truncate: 5000 }}]]></g:description>
+        <g:link>{{ shop.url }}{{ variant.url }}</g:link>
+        <g:image_link>https:{{ variant.image | default: product.featured_image | image_url: width: 1024 }}</g:image_link>
+        <g:brand>{{ product.vendor | default: 'EESOME' | escape }}</g:brand>
+        <g:price>{{ variant.price | money_without_currency }} {{ cart.currency.iso_code }}</g:price>
+        <g:availability>{% if variant.available %}in stock{% else %}out of stock{% endif %}</g:availability>
+        <g:condition>new</g:condition>
+        <g:google_product_category>1604</g:google_product_category>
+        <g:item_group_id>{{ product.id }}</g:item_group_id>
+      </item>
+      {% endfor %}
+    {% endfor %}
+  {% endpaginate %}
+</channel>
+</rss>

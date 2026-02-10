@@ -1,0 +1,491 @@
+{% comment %}
+  Shopify Section: Location Aware Announcement Bar
+
+  This section allows you to display customizable announcement bars based on
+  the visitor's geographic location. You can add multiple announcement blocks,
+  each configured to show for a specific country or globally.
+
+  Features:
+  - Geolocation detection using a free IP API (ipapi.co).
+  - Conditional display of announcement bars based on detected country.
+  - Option to show an announcement globally (to all visitors).
+  - Uses Shopify's `country_selector` for easy country selection in the theme editor.
+  - Styled with basic Tailwind CSS classes for a modern look.
+{% endcomment %}
+
+<!-- Basic styling for the announcement bar components. -->
+<!-- Display property is initially set to 'none' and controlled by JavaScript. -->
+<style>
+  .location-announcement-bar {
+    display: none; /* Hidden by default, shown by JS if location matches */
+  }
+
+  /*
+   * Fallback for Tailwind CSS if not already included in the theme.
+   * In a real Shopify theme, you would rely on the theme's existing Tailwind setup.
+   */
+  .p-3 { padding: 0.75rem; }
+  .text-center { text-align: center; }
+  .bg-indigo-600 { background-color: #4f46e5; }
+  .text-white { color: #ffffff; }
+  .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .rounded-md { border-radius: 0.375rem; }
+  .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+  .mb-4 { margin-bottom: 1rem; }
+</style>
+
+<!-- Main wrapper for all announcement bars within this section -->
+<div class="location-announcement-wrapper">
+  {% comment %}
+    Iterate over each 'announcement' block added in the Shopify theme editor.
+    Each block represents a distinct announcement bar.
+  {% endcomment %}
+  {% for block in section.blocks %}
+    {% liquid
+      assign block_country_code = block.settings.country_code | upcase
+      assign announcement_text = block.settings.announcement_text
+      assign show_globally = block.settings.show_globally
+    %}
+
+    {% comment %}
+      Only render the HTML for the announcement bar if there's text content.
+    {% endcomment %}
+    {% if announcement_text != blank %}
+      <div
+        class="location-announcement-bar p-3 text-center bg-indigo-600 text-white text-sm rounded-md shadow-md mb-4"
+        data-country-code="{{ block_country_code }}"
+        {#
+        Country
+        code
+        set
+        in
+        the
+        block
+        settings
+        #}
+        data-show-globally="{{ show_globally }}"
+        {#
+        Boolean
+        for
+        global
+        display
+        #}
+        data-block-id="{{ block.id }}"
+        {#
+        Unique
+        ID
+        for
+        the
+        block
+        #}
+      >
+        {{ announcement_text }}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% comment %}
+  JavaScript for location detection and conditional display.
+  This script fetches the user's country and then shows/hides
+  the announcement bars accordingly.
+{% endcomment %}
+<script>
+  // IIFE (Immediately Invoked Function Expression) to encapsulate the script
+  // and prevent variables from polluting the global scope.
+  (function() {
+    // Select all announcement bar elements on the page.
+    const announcementBars = document.querySelectorAll('.location-announcement-bar');
+    // API endpoint for IP-based geolocation. ipapi.co is used as a free, simple option.
+    const ipApiUrl = 'https://ipapi.co/json/';
+
+    /**
+     * Fetches the user's country code based on their IP address.
+     * @returns {Promise<string|null>} A promise that resolves with the
+     * 2-letter country code (e.g., 'US', 'CA')
+     * in uppercase, or null if detection fails.
+     */
+    async function getUserCountry() {
+      try {
+        const response = await fetch(ipApiUrl);
+        // Check if the network request was successful (status 200-299).
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Validate that the response contains a valid country_code.
+        if (data && typeof data.country_code === 'string') {
+          return data.country_code.toUpperCase(); // Return uppercase 2-letter country code
+        }
+        console.warn('IP API response did not contain a valid country_code:', data);
+        return null; // Return null if country_code is missing or invalid.
+      } catch (error) {
+        // Log any errors that occur during the fetch operation.
+        console.error('Error fetching IP-based location:', error);
+        return null; // Return null on any error during fetch or JSON parsing.
+      }
+    }
+
+    /**
+     * Updates the visibility of announcement bars.
+     * An announcement bar is shown if:
+     * 1. Its 'Show Globally?' setting is checked.
+     * 2. OR, if the user's detected country matches the country selected for the block.
+     * Otherwise, the announcement bar remains hidden.
+     */
+    async function updateAnnouncementVisibility() {
+      // Get the user's country code asynchronously.
+      const userCountryCode = await getUserCountry();
+
+      // Log the detected country for debugging purposes in the browser console.
+      console.log('User country detected:', userCountryCode || 'Unknown (failed to detect)');
+
+      // Iterate over each announcement bar element found on the page.
+      announcementBars.forEach(bar => {
+        // Retrieve settings from data attributes.
+        const blockCountryCode = bar.dataset.countryCode;
+        // Convert the 'true'/'false' string from dataset to a boolean.
+        const showGlobally = bar.dataset.showGlobally === 'true';
+
+        let shouldShow = false; // Flag to determine if the current bar should be visible.
+
+        // Logic to determine visibility:
+        if (showGlobally) {
+          // If 'Show Globally' is checked, the announcement is always visible.
+          shouldShow = true;
+        } else if (userCountryCode && userCountryCode === blockCountryCode) {
+          // If not global, check if the detected user country matches the block's configured country.
+          // Ensure both are valid and match for conditional display.
+          shouldShow = true;
+        }
+
+        // Apply the display style based on the 'shouldShow' flag.
+        if (shouldShow) {
+          bar.style.display = 'block'; // Make the announcement visible.
+        } else {
+          bar.style.display = 'none'; // Hide the announcement.
+        }
+
+        // Detailed logging for each block's visibility decision.
+        console.log(
+          `Block ID: ${bar.dataset.blockId || 'N/A'}, ` +
+          `Configured Country: ${blockCountryCode || 'N/A'}, ` +
+          `Show Globally: ${showGlobally}, ` +
+          `Should Show: ${shouldShow}`
+        );
+      });
+    }
+
+    // Add an event listener to run the visibility update function once the
+    // entire DOM content has been loaded and parsed. This ensures all
+    // announcement bar elements are available before the script tries to access them.
+    document.addEventListener('DOMContentLoaded', updateAnnouncementVisibility);
+  })();
+</script>
+
+{% comment %}
+  Shopify Schema Definition:
+  This JSON defines the settings and blocks available for this section
+  in the Shopify theme editor (Customize).
+{% endcomment %}
+{% schema %}
+{
+  "name": "Location Announcement",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Add blocks below to display announcements based on location or globally. Each block can target a specific country or be shown everywhere."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement Bar",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "announcement_text",
+          "label": "Announcement Text",
+          "default": "<p>Welcome! Enjoy free shipping!</p>",
+          "info": "Enter the text content for this announcement bar."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_globally",
+          "label": "Show Globally?",
+          "default": false,
+          "info": "Check this to show the announcement to all visitors, regardless of their location. If unchecked, it will only show for the specific country selected below."
+        },
+        {
+          "type": "select",
+          "id": "country_code",
+          "label": "Show for Specific Country",
+          "options": [
+            { "value": "AF", "label": "Afghanistan" },
+            { "value": "AX", "label": "Aland Islands" },
+            { "value": "AL", "label": "Albania" },
+            { "value": "DZ", "label": "Algeria" },
+            { "value": "AS", "label": "American Samoa" },
+            { "value": "AD", "label": "Andorra" },
+            { "value": "AO", "label": "Angola" },
+            { "value": "AI", "label": "Anguilla" },
+            { "value": "AQ", "label": "Antarctica" },
+            { "value": "AG", "label": "Antigua And Barbuda" },
+            { "value": "AR", "label": "Argentina" },
+            { "value": "AM", "label": "Armenia" },
+            { "value": "AW", "label": "Aruba" },
+            { "value": "AU", "label": "Australia" },
+            { "value": "AT", "label": "Austria" },
+            { "value": "AZ", "label": "Azerbaijan" },
+            { "value": "BS", "label": "Bahamas" },
+            { "value": "BH", "label": "Bahrain" },
+            { "value": "BD", "label": "Bangladesh" },
+            { "value": "BB", "label": "Barbados" },
+            { "value": "BY", "label": "Belarus" },
+            { "value": "BE", "label": "Belgium" },
+            { "value": "BZ", "label": "Belize" },
+            { "value": "BJ", "label": "Benin" },
+            { "value": "BM", "label": "Bermuda" },
+            { "value": "BT", "label": "Bhutan" },
+            { "value": "BO", "label": "Bolivia" },
+            { "value": "BA", "label": "Bosnia And Herzegovina" },
+            { "value": "BW", "label": "Botswana" },
+            { "value": "BV", "label": "Bouvet Island" },
+            { "value": "BR", "label": "Brazil" },
+            { "value": "IO", "label": "British Indian Ocean Territory" },
+            { "value": "BN", "label": "Brunei Darussalam" },
+            { "value": "BG", "label": "Bulgaria" },
+            { "value": "BF", "label": "Burkina Faso" },
+            { "value": "BI", "label": "Burundi" },
+            { "value": "KH", "label": "Cambodia" },
+            { "value": "CM", "label": "Cameroon" },
+            { "value": "CA", "label": "Canada" },
+            { "value": "CV", "label": "Cape Verde" },
+            { "value": "KY", "label": "Cayman Islands" },
+            { "value": "CF", "label": "Central African Republic" },
+            { "value": "TD", "label": "Chad" },
+            { "value": "CL", "label": "Chile" },
+            { "value": "CN", "label": "China" },
+            { "value": "CX", "label": "Christmas Island" },
+            { "value": "CC", "label": "Cocos (Keeling) Islands" },
+            { "value": "CO", "label": "Colombia" },
+            { "value": "KM", "label": "Comoros" },
+            { "value": "CG", "label": "Congo" },
+            { "value": "CD", "label": "Congo, Democratic Republic" },
+            { "value": "CK", "label": "Cook Islands" },
+            { "value": "CR", "label": "Costa Rica" },
+            { "value": "CI", "label": "Cote D'Ivoire" },
+            { "value": "HR", "label": "Croatia" },
+            { "value": "CU", "label": "Cuba" },
+            { "value": "CY", "label": "Cyprus" },
+            { "value": "CZ", "label": "Czech Republic" },
+            { "value": "DK", "label": "Denmark" },
+            { "value": "DJ", "label": "Djibouti" },
+            { "value": "DM", "label": "Dominica" },
+            { "value": "DO", "label": "Dominican Republic" },
+            { "value": "EC", "label": "Ecuador" },
+            { "value": "EG", "label": "Egypt" },
+            { "value": "SV", "label": "El Salvador" },
+            { "value": "GQ", "label": "Equatorial Guinea" },
+            { "value": "ER", "label": "Eritrea" },
+            { "value": "EE", "label": "Estonia" },
+            { "value": "ET", "label": "Ethiopia" },
+            { "value": "FK", "label": "Falkland Islands (Malvinas)" },
+            { "value": "FO", "label": "Faroe Islands" },
+            { "value": "FJ", "label": "Fiji" },
+            { "value": "FI", "label": "Finland" },
+            { "value": "FR", "label": "France" },
+            { "value": "GF", "label": "French Guiana" },
+            { "value": "PF", "label": "French Polynesia" },
+            { "value": "TF", "label": "French Southern Territories" },
+            { "value": "GA", "label": "Gabon" },
+            { "value": "GM", "label": "Gambia" },
+            { "value": "GE", "label": "Georgia" },
+            { "value": "DE", "label": "Germany" },
+            { "value": "GH", "label": "Ghana" },
+            { "value": "GI", "label": "Gibraltar" },
+            { "value": "GR", "label": "Greece" },
+            { "value": "GL", "label": "Greenland" },
+            { "value": "GD", "label": "Grenada" },
+            { "value": "GP", "label": "Guadeloupe" },
+            { "value": "GU", "label": "Guam" },
+            { "value": "GT", "label": "Guatemala" },
+            { "value": "GG", "label": "Guernsey" },
+            { "value": "GN", "label": "Guinea" },
+            { "value": "GW", "label": "Guinea-Bissau" },
+            { "value": "GY", "label": "Guyana" },
+            { "value": "HT", "label": "Haiti" },
+            { "value": "HM", "label": "Heard Island & Mcdonald Islands" },
+            { "value": "VA", "label": "Holy See (Vatican City State)" },
+            { "value": "HN", "label": "Honduras" },
+            { "value": "HK", "label": "Hong Kong" },
+            { "value": "HU", "label": "Hungary" },
+            { "value": "IS", "label": "Iceland" },
+            { "value": "IN", "label": "India" },
+            { "value": "ID", "label": "Indonesia" },
+            { "value": "IR", "label": "Iran, Islamic Republic Of" },
+            { "value": "IQ", "label": "Iraq" },
+            { "value": "IE", "label": "Ireland" },
+            { "value": "IM", "label": "Isle Of Man" },
+            { "value": "IL", "label": "Israel" },
+            { "value": "IT", "label": "Italy" },
+            { "value": "JM", "label": "Jamaica" },
+            { "value": "JP", "label": "Japan" },
+            { "value": "JE", "label": "Jersey" },
+            { "value": "JO", "label": "Jordan" },
+            { "value": "KZ", "label": "Kazakhstan" },
+            { "value": "KE", "label": "Kenya" },
+            { "value": "KI", "label": "Kiribati" },
+            { "value": "KP", "label": "Korea, Democratic People's Republic Of" },
+            { "value": "KR", "label": "Korea, Republic Of" },
+            { "value": "KW", "label": "Kuwait" },
+            { "value": "KG", "label": "Kyrgyzstan" },
+            { "value": "LA", "label": "Lao People's Democratic Republic" },
+            { "value": "LV", "label": "Latvia" },
+            { "value": "LB", "label": "Lebanon" },
+            { "value": "LS", "label": "Lesotho" },
+            { "value": "LR", "label": "Liberia" },
+            { "value": "LY", "label": "Libyan Arab Jamahiriya" },
+            { "value": "LI", "label": "Liechtenstein" },
+            { "value": "LT", "label": "Lithuania" },
+            { "value": "LU", "label": "Luxembourg" },
+            { "value": "MO", "label": "Macao" },
+            { "value": "MK", "label": "Macedonia" },
+            { "value": "MG", "label": "Madagascar" },
+            { "value": "MW", "label": "Malawi" },
+            { "value": "MY", "label": "Malaysia" },
+            { "value": "MV", "label": "Maldives" },
+            { "value": "ML", "label": "Mali" },
+            { "value": "MT", "label": "Malta" },
+            { "value": "MH", "label": "Marshall Islands" },
+            { "value": "MQ", "label": "Martinique" },
+            { "value": "MR", "label": "Mauritania" },
+            { "value": "MU", "label": "Mauritius" },
+            { "value": "YT", "label": "Mayotte" },
+            { "value": "MX", "label": "Mexico" },
+            { "value": "FM", "label": "Micronesia, Federated States Of" },
+            { "value": "MD", "label": "Moldova, Republic Of" },
+            { "value": "MC", "label": "Monaco" },
+            { "value": "MN", "label": "Mongolia" },
+            { "value": "ME", "label": "Montenegro" },
+            { "value": "MS", "label": "Montserrat" },
+            { "value": "MA", "label": "Morocco" },
+            { "value": "MZ", "label": "Mozambique" },
+            { "value": "MM", "label": "Myanmar" },
+            { "value": "NA", "label": "Namibia" },
+            { "value": "NR", "label": "Nauru" },
+            { "value": "NP", "label": "Nepal" },
+            { "value": "NL", "label": "Netherlands" },
+            { "value": "AN", "label": "Netherlands Antilles" },
+            { "value": "NC", "label": "New Caledonia" },
+            { "value": "NZ", "label": "New Zealand" },
+            { "value": "NI", "label": "Nicaragua" },
+            { "value": "NE", "label": "Niger" },
+            { "value": "NG", "label": "Nigeria" },
+            { "value": "NU", "label": "Niue" },
+            { "value": "NF", "label": "Norfolk Island" },
+            { "value": "MP", "label": "Northern Mariana Islands" },
+            { "value": "NO", "label": "Norway" },
+            { "value": "OM", "label": "Oman" },
+            { "value": "PK", "label": "Pakistan" },
+            { "value": "PW", "label": "Palau" },
+            { "value": "PS", "label": "Palestinian Territory, Occupied" },
+            { "value": "PA", "label": "Panama" },
+            { "value": "PG", "label": "Papua New Guinea" },
+            { "value": "PY", "label": "Paraguay" },
+            { "value": "PE", "label": "Peru" },
+            { "value": "PH", "label": "Philippines" },
+            { "value": "PN", "label": "Pitcairn" },
+            { "value": "PL", "label": "Poland" },
+            { "value": "PT", "label": "Portugal" },
+            { "value": "PR", "label": "Puerto Rico" },
+            { "value": "QA", "label": "Qatar" },
+            { "value": "RE", "label": "Reunion" },
+            { "value": "RO", "label": "Romania" },
+            { "value": "RU", "label": "Russian Federation" },
+            { "value": "RW", "label": "Rwanda" },
+            { "value": "BL", "label": "Saint Barthelemy" },
+            { "value": "SH", "label": "Saint Helena" },
+            { "value": "KN", "label": "Saint Kitts And Nevis" },
+            { "value": "LC", "label": "Saint Lucia" },
+            { "value": "MF", "label": "Saint Martin" },
+            { "value": "PM", "label": "Saint Pierre And Miquelon" },
+            { "value": "VC", "label": "Saint Vincent And Grenadines" },
+            { "value": "WS", "label": "Samoa" },
+            { "value": "SM", "label": "San Marino" },
+            { "value": "ST", "label": "Sao Tome And Principe" },
+            { "value": "SA", "label": "Saudi Arabia" },
+            { "value": "SN", "label": "Senegal" },
+            { "value": "RS", "label": "Serbia" },
+            { "value": "SC", "label": "Seychelles" },
+            { "value": "SL", "label": "Sierra Leone" },
+            { "value": "SG", "label": "Singapore" },
+            { "value": "SK", "label": "Slovakia" },
+            { "value": "SI", "label": "Slovenia" },
+            { "value": "SB", "label": "Solomon Islands" },
+            { "value": "SO", "label": "Somalia" },
+            { "value": "ZA", "label": "South Africa" },
+            { "value": "GS", "label": "South Georgia And Sandwich Isl." },
+            { "value": "ES", "label": "Spain" },
+            { "value": "LK", "label": "Sri Lanka" },
+            { "value": "SD", "label": "Sudan" },
+            { "value": "SR", "label": "Suriname" },
+            { "value": "SJ", "label": "Svalbard And Jan Mayen" },
+            { "value": "SZ", "label": "Swaziland" },
+            { "value": "SE", "label": "Sweden" },
+            { "value": "CH", "label": "Switzerland" },
+            { "value": "SY", "label": "Syrian Arab Republic" },
+            { "value": "TW", "label": "Taiwan" },
+            { "value": "TJ", "label": "Tajikistan" },
+            { "value": "TZ", "label": "Tanzania" },
+            { "value": "TH", "label": "Thailand" },
+            { "value": "TL", "label": "Timor-Leste" },
+            { "value": "TG", "label": "Togo" },
+            { "value": "TK", "label": "Tokelau" },
+            { "value": "TO", "label": "Tonga" },
+            { "value": "TT", "label": "Trinidad And Tobago" },
+            { "value": "TN", "label": "Tunisia" },
+            { "value": "TR", "label": "Turkey" },
+            { "value": "TM", "label": "Turkmenistan" },
+            { "value": "TC", "label": "Turks And Caicos Islands" },
+            { "value": "TV", "label": "Tuvalu" },
+            { "value": "UG", "label": "Uganda" },
+            { "value": "UA", "label": "Ukraine" },
+            { "value": "AE", "label": "United Arab Emirates" },
+            { "value": "GB", "label": "United Kingdom" },
+            { "value": "US", "label": "United States" },
+            { "value": "UM", "label": "United States Outlying Islands" },
+            { "value": "UY", "label": "Uruguay" },
+            { "value": "UZ", "label": "Uzbekistan" },
+            { "value": "VU", "label": "Vanuatu" },
+            { "value": "VE", "label": "Venezuela" },
+            { "value": "VN", "label": "Viet Nam" },
+            { "value": "VG", "label": "Virgin Islands, British" },
+            { "value": "VI", "label": "Virgin Islands, U.S." },
+            { "value": "WF", "label": "Wallis And Futuna" },
+            { "value": "EH", "label": "Western Sahara" },
+            { "value": "YE", "label": "Yemen" },
+            { "value": "ZM", "label": "Zambia" },
+            { "value": "ZW", "label": "Zimbabwe" }
+          ],
+          "default": "US",
+          "info": "Select the country for which this announcement should appear. This setting is ignored if 'Show Globally?' is checked. Default is United States."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Location Aware Announcement",
+      "category": "Custom",
+      "blocks": [
+        {
+          "type": "announcement"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

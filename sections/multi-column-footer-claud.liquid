@@ -1,0 +1,650 @@
+{%- comment -%}
+  Multi-column footer section with support for rich text, images, menus, and newsletter/social signup
+{%- endcomment -%}
+
+<footer class="multicolumn-footer color-{{ section.settings.color_scheme }} gradient">
+  <div class="multicolumn-footer__container page-width">
+    <div class="multicolumn-footer__grid">
+      {% for block in section.blocks %}
+        <div
+          class="multicolumn-footer__column {% if block.type == 'newsletter_social' %}footer-signup-column{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          {% case block.type %}
+            {% when 'rich_text' %}
+              <div class="multicolumn-footer__rich-text">
+                <button class="footer-accordion-toggle" aria-expanded="false">
+                  <span>{{ block.settings.heading | default: 'About Us' }}</span>
+                  <svg class="footer-accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div class="footer-accordion-content">
+                  {% if block.settings.heading != blank %}
+                    <h3 class="multicolumn-footer__heading h4">{{ block.settings.heading }}</h3>
+                  {% endif %}
+                  {% if block.settings.text != blank %}
+                    <div class="multicolumn-footer__text rte">
+                      {{ block.settings.text }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% when 'image' %}
+              <div class="multicolumn-footer__image">
+                <button class="footer-accordion-toggle" aria-expanded="false">
+                  <span>{{ block.settings.caption | default: 'Image' }}</span>
+                  <svg class="footer-accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div class="footer-accordion-content">
+                  {% if block.settings.image != blank %}
+                    {% if block.settings.link != blank %}
+                      <a href="{{ block.settings.link }}">
+                    {% endif %}
+                    {{
+                      block.settings.image
+                      | image_url: width: 300
+                      | image_tag: loading: 'lazy', alt: block.settings.image.alt
+                      | default: shop.name, class: 'multicolumn-footer__image-img'
+                    }}
+                    {% if block.settings.link != blank %}
+                      </a>
+                    {% endif %}
+                  {% endif %}
+                  {% if block.settings.caption != blank %}
+                    <p class="multicolumn-footer__image-caption">{{ block.settings.caption }}</p>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% when 'menu' %}
+              <div class="multicolumn-footer__menu">
+                <button class="footer-accordion-toggle" aria-expanded="false">
+                  <span>{{ block.settings.heading | default: 'Menu' }}</span>
+                  <svg class="footer-accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div class="footer-accordion-content">
+                  {% if block.settings.heading != blank %}
+                    <h3 class="multicolumn-footer__heading h4">{{ block.settings.heading }}</h3>
+                  {% endif %}
+                  {% if block.settings.menu != blank %}
+                    <ul class="multicolumn-footer__menu-list list-unstyled" role="list">
+                      {% for link in linklists[block.settings.menu].links %}
+                        <li class="multicolumn-footer__menu-item">
+                          <a href="{{ link.url }}" class="multicolumn-footer__menu-link link link--text">
+                            {{ link.title }}
+                          </a>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% when 'spacer' %}
+              <div class="multicolumn-footer__spacer">
+                <!-- Empty spacer column -->
+              </div>
+
+            {% when 'newsletter_social' %}
+              <div class="footer-signup-social">
+                <button class="footer-accordion-toggle" aria-expanded="false">
+                  <span>{{ block.settings.heading | default: 'Stay Connected' }}</span>
+                  <svg class="footer-accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div class="footer-accordion-content">
+                  {% if block.settings.heading != blank %}
+                    <h3 class="footer-signup__heading">{{ block.settings.heading }}</h3>
+                  {% endif %}
+
+                  <!-- Newsletter Form -->
+                  {% form 'customer', class: 'footer-signup__form' %}
+                    <input type="hidden" name="contact[tags]" value="newsletter">
+                    <div class="footer-signup__input-wrapper">
+                      <input
+                        id="FooterNewsletter-{{ section.id }}-{{ block.id }}"
+                        type="email"
+                        name="contact[email]"
+                        class="footer-signup__input"
+                        value="{{ form.email }}"
+                        placeholder="Enter your email"
+                        autocomplete="email"
+                        required
+                      >
+                      <button type="submit" class="footer-signup__icon-btn" aria-label="Submit">
+                        <svg width="26" height="20" viewBox="0 0 26 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1.5 3.75C1.5 2.64543 2.39543 1.75 3.5 1.75H22.5C23.6046 1.75 24.5 2.64543 24.5 3.75V16.25C24.5 17.3546 23.6046 18.25 22.5 18.25H3.5C2.39543 18.25 1.5 17.3546 1.5 16.25V3.75Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <path d="M2.5 3.75L13 11.25L23.5 3.75" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                      </button>
+                    </div>
+                  {% endform %}
+
+                  <!-- Social Links -->
+                  <div class="footer-signup__socials">
+                    {% if block.settings.instagram_url != blank %}
+                      <a href="{{ block.settings.instagram_url }}" target="_blank" class="footer-signup__social-link">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="currentColor"/>
+                        </svg>
+                      </a>
+                    {% endif %}
+
+                    {% if block.settings.facebook_url != blank %}
+                      <a href="{{ block.settings.facebook_url }}" target="_blank" class="footer-signup__social-link">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="currentColor"/>
+                        </svg>
+                      </a>
+                    {% endif %}
+
+                    {% if block.settings.youtube_url != blank %}
+                      <a href="{{ block.settings.youtube_url }}" target="_blank" class="footer-signup__social-link">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="currentColor"/>
+                        </svg>
+                      </a>
+                    {% endif %}
+
+                    {% if block.settings.twitter_url != blank %}
+                      <a href="{{ block.settings.twitter_url }}" target="_blank" class="footer-signup__social-link">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" fill="currentColor"/>
+                        </svg>
+                      </a>
+                    {% endif %}
+
+                    {% if block.settings.tiktok_url != blank %}
+                      <a href="{{ block.settings.tiktok_url }}" target="_blank" class="footer-signup__social-link">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" fill="currentColor"/>
+                        </svg>
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+          {% endcase %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</footer>
+
+<style>
+    .multicolumn-footer {
+      padding: 5rem 0;
+      margin-top: 5rem;
+    }
+
+    .multicolumn-footer__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 3rem;
+      align-items: flex-start;
+    }
+
+    .multicolumn-footer__column {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      word-wrap: break-word;
+    }
+
+    .multicolumn-footer__heading {
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      word-break: normal;
+      white-space: normal;
+      color: #333 !important;
+    }
+
+    .multicolumn-footer__text {
+      line-height: 1.6;
+    }
+
+    .multicolumn-footer__image-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--border-radius);
+    }
+
+    .multicolumn-footer__image-caption {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: rgba(var(--color-foreground), 0.7);
+    }
+
+    .multicolumn-footer__menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .multicolumn-footer__menu-link {
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .multicolumn-footer__menu-link:hover {
+      color: rgb(var(--color-link));
+    }
+
+    /* Make newsletter column span more grid space */
+    .footer-signup-column {
+      grid-column: span 2;
+    }
+
+    /* Newsletter + Social Combined Styles */
+    .footer-signup-social {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      width: 100%;
+    }
+
+    .footer-signup__heading {
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    /* Newsletter Form Styles */
+    .footer-signup__form {
+      width: 100%;
+    }
+
+    .footer-signup__input-wrapper {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: white;
+      border: 2px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .footer-signup__input-wrapper:focus-within {
+      border-color: #333;
+    }
+
+    .footer-signup__input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      outline: none;
+      color: #333;
+    }
+
+    .footer-signup__input::placeholder {
+      color: #999;
+    }
+
+    .footer-signup__icon-btn {
+      background: #f8f8f8;
+      border: none;
+      padding: 12px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      min-width: 50px;
+      height: 50px;
+      border-radius: 0;
+    }
+
+    .footer-signup__icon-btn:hover {
+      background-color: #e0e0e0;
+    }
+
+    .footer-signup__icon-btn svg {
+      width: 26px;
+      height: 20px;
+    color: #333 !important;
+    stroke: #333 !important;
+    fill: none !important;
+    }
+
+    /* Social Links Styles */
+    .footer-signup__socials {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .footer-signup__social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: #f8f8f8;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .footer-signup__social-link:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
+
+    .footer-signup__social-link svg {
+      width: 20px;
+      height: 20px;
+      fill: #333;
+    }
+
+    /* Spacer Column */
+    .multicolumn-footer__spacer {
+      min-height: 1px;
+    }
+
+    /* Accordion Styles - Hidden by default */
+    .footer-accordion-toggle {
+      display: none;
+    }
+
+    .footer-accordion-content {
+      display: block;
+    }
+
+    /* Responsive Design */
+    @media screen and (max-width: 990px) {
+      .footer-signup-column {
+        grid-column: span 1;
+      }
+    }
+
+    @media screen and (max-width: 749px) {
+      .multicolumn-footer {
+        padding: 3rem 0;
+      }
+
+      .multicolumn-footer__grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .footer-signup-column {
+        grid-column: span 1;
+      }
+
+      .footer-signup-social {
+        max-width: 100%;
+      }
+
+      .footer-signup__socials {
+        justify-content: center;
+      }
+
+      /* Accordion Mobile Styles */
+      .multicolumn-footer__column {
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .footer-accordion-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 1rem 0;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .footer-accordion-toggle:hover {
+        color: rgb(var(--color-link));
+      }
+
+      .footer-accordion-icon {
+        width: 20px;
+        height: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      .footer-accordion-toggle.active .footer-accordion-icon {
+        transform: rotate(180deg);
+      }
+
+      .footer-accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+
+      .footer-accordion-content.active {
+        max-height: 500px;
+        padding-bottom: 1rem;
+      }
+
+      /* Hide default headings on mobile */
+      .multicolumn-footer__heading,
+      .footer-signup__heading {
+        display: none;
+      }
+
+      /* Newsletter column always open on mobile */
+      .footer-signup-social .footer-accordion-content {
+        max-height: none;
+        overflow: visible;
+        padding-bottom: 1rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .multicolumn-footer {
+        padding: 2rem 0;
+      }
+
+      .multicolumn-footer__grid {
+        gap: 0.5rem;
+      }
+
+      .footer-signup__input-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .footer-signup__input {
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .footer-signup__icon-btn {
+        width: 100%;
+        height: 48px;
+        border-radius: 0 0 8px 8px;
+      }
+    }
+
+    .footer-accordion-toggle,
+  .footer-accordion-toggle span,
+  .multicolumn-footer__heading,
+  .footer-signup__heading {
+    color: #333 !important; /* or your desired color */
+    text-decoration: none !important;
+    background: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Only run on mobile screens
+    if (window.innerWidth <= 749) {
+      const accordionToggles = document.querySelectorAll('.footer-accordion-toggle');
+
+      accordionToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          const content = this.nextElementSibling;
+          const isActive = this.classList.contains('active');
+
+          // Close all other accordions
+          accordionToggles.forEach(otherToggle => {
+            if (otherToggle !== this) {
+              otherToggle.classList.remove('active');
+              otherToggle.nextElementSibling.classList.remove('active');
+            }
+          });
+
+          // Toggle current accordion
+          if (isActive) {
+            this.classList.remove('active');
+            content.classList.remove('active');
+          } else {
+            this.classList.add('active');
+            content.classList.add('active');
+          }
+        });
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Multi-Column Footer",
+  "tag": "footer",
+  "class": "section",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "rich_text",
+      "name": "Rich Text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "About Us"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Share information about your brand with your customers.</p>"
+        }
+      ]
+    },
+    {
+  "type": "spacer",
+  "name": "Spacer Column",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Spacer Settings"
+    },
+    {
+      "type": "paragraph",
+      "content": "Use this block to add empty space between columns"
+    }
+  ]
+},
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Quick Links"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "default": "footer"
+        }
+      ]
+    },
+    {
+  "type": "newsletter_social",
+  "name": "Newsletter + Social",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Stay Connected"
+    },
+    {
+      "type": "header",
+      "content": "Social Media Links"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "facebook_url",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "youtube_url",
+      "label": "YouTube URL"
+    },
+    {
+      "type": "url",
+      "id": "twitter_url",
+      "label": "Twitter URL"
+    },
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "TikTok URL"
+    }
+  ]
+}
+
+  ],
+  "presets": [
+    {
+      "name": "Multi-Column Footer",
+      "blocks": [
+        {
+          "type": "rich_text"
+        },
+        {
+          "type": "menu"
+        },
+        {
+          "type": "newsletter_social"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

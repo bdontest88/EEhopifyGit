@@ -1,0 +1,159 @@
+{% doc %}
+  @prompt
+  Create a announcement bar block that can be added to the header section and has the following features: - a toggle for
+  marquee text with speed up to 300 in increments of 10 - color picker background color - color picker text color - the
+  ability to choose fonts and its font size and font settings like bold and strikethrough
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-announcement-bar-{{ ai_gen_id }} {
+    background-color: {{ block.settings.background_color }};
+    color: {{ block.settings.text_color }};
+    padding: 12px 0;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .ai-announcement-bar-content-{{ ai_gen_id }} {
+    font-family: {{ block.settings.font_family.family }}, {{ block.settings.font_family.fallback_families }};
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.font_family.weight }};
+    font-style: {{ block.settings.font_family.style }};
+    line-height: 1.4;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  {% if block.settings.enable_marquee %}
+    .ai-announcement-bar-content-{{ ai_gen_id }} {
+      display: inline-block;
+      animation: ai-marquee-{{ ai_gen_id }} {{ block.settings.marquee_speed }}s linear infinite;
+      padding-left: 100%;
+    }
+
+    @keyframes ai-marquee-{{ ai_gen_id }} {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        transform: translate3d(-100%, 0, 0);
+      }
+    }
+
+    .ai-announcement-bar-{{ ai_gen_id }}:hover .ai-announcement-bar-content-{{ ai_gen_id }} {
+      animation-play-state: paused;
+    }
+  {% else %}
+    .ai-announcement-bar-content-{{ ai_gen_id }} {
+      padding: 0 20px;
+    }
+  {% endif %}
+
+  @media screen and (max-width: 749px) {
+    .ai-announcement-bar-{{ ai_gen_id }} {
+      padding: 10px 0;
+    }
+
+    .ai-announcement-bar-content-{{ ai_gen_id }} {
+      font-size: {{ block.settings.font_size | times: 0.9 }}px;
+    }
+
+    {% unless block.settings.enable_marquee %}
+      .ai-announcement-bar-content-{{ ai_gen_id }} {
+        white-space: normal;
+        padding: 0 15px;
+      }
+    {% endunless %}
+  }
+{% endstyle %}
+
+<div class="ai-announcement-bar-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.announcement_text != blank %}
+    <div class="ai-announcement-bar-content-{{ ai_gen_id }}">
+      {{ block.settings.announcement_text }}
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Announcement Bar",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement text",
+      "default": "Free shipping on orders over $50!"
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_marquee",
+      "label": "Enable marquee scrolling",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "min": 10,
+      "max": 200,
+      "step": 5,
+      "unit": "s",
+      "label": "Marquee speed",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "font_picker",
+      "id": "font_family",
+      "label": "Font",
+      "default": "helvetica_n4"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 14
+    }
+  ],
+  "presets": [
+    {
+      "name": "Marquee Announcement Bar",
+      "category": "Custom"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

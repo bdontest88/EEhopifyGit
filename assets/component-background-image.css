@@ -1,0 +1,11 @@
+/* Minimal Background Image Styles */
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.background-image-fit .background-image {
+  object-fit: contain;
+}

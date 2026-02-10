@@ -1,0 +1,151 @@
+{% doc %}
+  @prompt
+    Create a announcement bar block that can be added to the header section and has the following features: 1) a toggle for
+      marquee text with speed up to 300 in increments of 1 2) color picker background color 3) color picker text color 4) the
+      ability to choose shopify fonts and its font size and typography settings like bold and strikethrough 5) add block to header section
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-announcement-bar-{{ ai_gen_id }} {
+    background-color: {{ block.settings.background_color }};
+    color: {{ block.settings.text_color }};
+    padding: 12px 0;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .ai-announcement-bar-content-{{ ai_gen_id }} {
+    font-family: {{ block.settings.font_family.family }}, {{ block.settings.font_family.fallback_families }};
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {% if block.settings.font_bold %}bold{% else %}normal{% endif %};
+    text-decoration: {% if block.settings.font_strikethrough %}line-through{% else %}none{% endif %};
+    text-align: center;
+    white-space: nowrap;
+    {% if block.settings.enable_marquee %}
+      animation: ai-marquee-{{ ai_gen_id }} {{ block.settings.marquee_speed }}s linear infinite;
+    {% endif %}
+  }
+
+  {% if block.settings.enable_marquee %}
+    @keyframes ai-marquee-{{ ai_gen_id }} {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+  {% endif %}
+
+  @media screen and (max-width: 749px) {
+    .ai-announcement-bar-{{ ai_gen_id }} {
+      padding: 8px 0;
+    }
+    
+    .ai-announcement-bar-content-{{ ai_gen_id }} {
+      font-size: {{ block.settings.font_size | times: 0.9 }}px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-announcement-bar-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-announcement-bar-content-{{ ai_gen_id }}">
+    {{ block.settings.announcement_text }}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Announcement Bar",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement text",
+      "default": "Free shipping on orders over $50!"
+    },
+    {
+      "type": "header",
+      "content": "Marquee Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_marquee",
+      "label": "Enable marquee scrolling",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "min": 5,
+      "max": 50,
+      "step": 1,
+      "unit": "s",
+      "label": "Marquee speed",
+      "default": 15,
+      "info": "Lower values = faster speed"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "font_picker",
+      "id": "font_family",
+      "label": "Font",
+      "default": "helvetica_n4"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "font_bold",
+      "label": "Bold text",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "font_strikethrough",
+      "label": "Strikethrough text",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement Bar"
+    }
+  ]
+}
+{% endschema %}

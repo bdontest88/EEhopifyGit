@@ -1,0 +1,168 @@
+{% comment %}
+  Section: Random Quotes with Fade-in Animation
+  Description: Displays a random quote from rich text blocks with styling controls and fade-in effect
+{% endcomment %}
+
+<style>
+
+  #{{ section.id }} .random-quotes__container {
+    max-width: {{ section.settings.max_width }}px;
+    margin: 0 auto;
+    text-align: {{ section.settings.text_alignment }};
+  }
+
+  .random-quotes__content {
+    font-size: {{ section.settings.font_size }}px;
+    line-height: 1.6;
+    color: {{ section.settings.text_color }};
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+    .random-quotes__content.fade-in {
+    opacity: 1;
+  }
+
+  .random-quotes__content :is(strong, b) {
+    font-weight: bold;
+  }
+
+  .random-quotes__content :is(em, i) {
+    font-style: italic;
+  }
+
+  .random-quotes__content a {
+    color: {{ section.settings.link_color }};
+    text-decoration: underline;
+  }
+
+  .placeholder {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 2rem 0;
+  }
+</style>
+<div class="random-quotes" id="{{ section.id }}">
+  <div class="page-width">
+    {% if section.blocks.size > 0 %}
+      {% assign timestamp = 'now' | date: '%s' %}
+      {% assign random_index = timestamp | modulo: section.blocks.size %}
+      {% assign random_quote = section.blocks[random_index].settings.quote %}
+
+      <div class="random-quotes__container">
+        <blockquote class="random-quotes__content">
+          {{ random_quote }}
+        </blockquote>
+      </div>
+    {% else %}
+      <div class="placeholder">Add quotes in the section settings</div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const quoteEl = document.querySelector('#{{ section.id }} .random-quotes__content');
+    if (quoteEl) {
+      // Trigger reflow so transition works
+      void quoteEl.offsetWidth;
+      quoteEl.classList.add('fade-in');
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Random Quotes",
+  "max_blocks": 20,
+  "settings": [
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 400,
+      "max": 1200,
+      "step": 50,
+      "unit": "px",
+      "label": "Max container width",
+      "default": 800
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 16,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Base font size",
+      "default": 20
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link color",
+      "default": "#0000EE"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "quote",
+      "name": "Quote",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "quote",
+          "label": "Quote content",
+          "default": "<p>Share inspirational quotes or customer testimonials here. Use the text editor to format your content.</p>",
+          "info": "Supports full rich text formatting"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Random Quotes",
+      "category": "Text",
+      "blocks": [
+        {
+          "type": "quote",
+          "settings": {
+            "quote": "<p>Great products and exceptional service. Will definitely shop here again!</p>"
+          }
+        },
+        {
+          "type": "quote",
+          "settings": {
+            "quote": "<p>This product has completely changed my daily routine. Highly recommend!</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
