@@ -388,6 +388,9 @@
       "block_order": [
         "ai_gen_block_b447702_K4iVKz"
       ],
+      "custom_css": [
+        "div{padding:0;}"
+      ],
       "name": "Recently Viewed",
       "settings": {
         "content_direction": "column",
