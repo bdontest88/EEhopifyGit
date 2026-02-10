@@ -724,7 +724,7 @@
             "product_title_size": 14,
             "product_title_color": "#000000",
             "product_price_size": 14,
-            "product_price_color": "#e6e6e6",
+            "product_price_color": "#000000",
             "empty_text_color": "#727272"
           },
           "blocks": {}
