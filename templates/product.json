@@ -708,7 +708,7 @@
             "heading": "Recently viewed",
             "empty_message": "You haven't viewed any products yet",
             "max_products": 10,
-            "hide_when_empty": false,
+            "hide_when_empty": true,
             "desktop_width_percent": 100,
             "section_padding": 20,
             "columns_desktop": 4,
