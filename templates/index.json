@@ -119,8 +119,8 @@
           "type": "ai_gen_block_3ea2602",
           "name": "Desktop Banner",
           "settings": {
-            "image": "shopify://shop_images/EESOME_Desktop_Banner_1.webp",
-            "alt_text": "EESOME x Dewi Siska Now Online Banner",
+            "image": "shopify://shop_images/Web_1_f857aee4-0cd3-4697-8046-612d352df2e5.png",
+            "alt_text": "EESOME - Whisper in Bloom",
             "link_url": "shopify://collections/new-arrivals",
             "show_on_desktop": true,
             "show_on_mobile": false,
@@ -134,7 +134,7 @@
           "type": "ai_gen_block_3ea2602",
           "name": "Mobile Banner",
           "settings": {
-            "image": "shopify://shop_images/EESOME_Mobile_Banner.webp",
+            "image": "shopify://shop_images/Web_2_f7c3d328-a69c-4e01-b8ea-fa0b8116be12.png",
             "alt_text": "EESOME x Dewi Siska Now Online Banner",
             "link_url": "shopify://collections/new-arrivals",
             "show_on_desktop": false,
